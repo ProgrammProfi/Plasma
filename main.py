@@ -98,6 +98,9 @@ try:
                         print("Invalid paths")
 
                     elif os.path.exists(req_ls[1]) and os.path.exists(req_ls[2]):
+                        print("The endpoint already has such a file")
+
+                    elif os.path.exists(req_ls[1]) and not os.path.exists(req_ls[2]):
                         shutil.move(req_ls[1], req_ls[2])
 
                 case "copy":
