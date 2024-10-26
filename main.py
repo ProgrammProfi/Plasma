@@ -1,30 +1,17 @@
 import os
 import shutil
 
-# import ctypes
-# import sys
-#
-#
-# def is_admin():
-#     try:
-#         return ctypes.windll.shell32.IsUserAnAdmin()
-#     except:
-#         return False
-#
-#
-# if is_admin():
-#     pass
-# else:
-#     # Перезапускаем скрипт с правами админа
-#     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
-#     exit()  # выходим из старой версии скрипта
-
 
 PATH = "root"
 AB_PATH = os.path.abspath("root")
 
 
-def abp(path: str): return os.path.abspath(path)
+def abp(path: str):
+    try:
+        return os.path.abspath(path)
+    except:
+        print("Path error")
+        return None
 
 
 running = True
@@ -35,6 +22,10 @@ try:
 
         request = input(f"<{PATH}> ~ ")
         req_ls = request.split(" ")
+
+        if "/" in request:
+            print("Use '\\' instead of '/'")
+            continue
 
         try:
             match req_ls[0]:
@@ -83,8 +74,12 @@ try:
 
                 case "del":
                     try:
+
                         if os.path.exists(PATH + "\\" + req_ls[1]):
-                            os.remove(PATH + "\\" + req_ls[1])
+                            if os.path.isfile(PATH + "\\" + req_ls[1]):
+                                os.remove(PATH + "\\" + req_ls[1])
+                            else:
+                                shutil.rmtree(PATH + "\\" + req_ls[1])
 
                         elif not os.path.exists(PATH + "\\" + req_ls[1]):
                             print("This object does not exist")
@@ -94,24 +89,30 @@ try:
                         print(err)
 
                 case "mv":
-                    if not (os.path.exists(req_ls[1]) and os.path.exists(req_ls[2])):
-                        print("Invalid paths")
+                    if not os.path.exists(req_ls[1]):
+                        print("File not found")
 
-                    elif os.path.exists(req_ls[1]) and os.path.exists(req_ls[2]):
+                    elif os.path.exists(req_ls[2]):
                         print("The endpoint already has such a file")
 
-                    elif os.path.exists(req_ls[1]) and not os.path.exists(req_ls[2]):
+                    elif not os.path.exists(req_ls[2][0 : req_ls[2].rfind("\\")]):
+                        print("There is no final path")
+
+                    else:
                         shutil.move(req_ls[1], req_ls[2])
 
                 case "copy":
                     if not os.path.exists(req_ls[1]):
-                        print("Invalid path")
+                        print("File not found")
 
-                    elif os.path.exists(req_ls[1]) and os.path.exists(req_ls[2]):
+                    elif os.path.exists(req_ls[2]):
                         print("The endpoint already has such a file")
 
-                    elif os.path.exists(req_ls[1]) and not os.path.exists(req_ls[2]):
-                        shutil.move(req_ls[1], req_ls[2])
+                    elif not os.path.exists(req_ls[2][0 : req_ls[2].rfind("\\")]):
+                        print("There is no final path")
+
+                    else:
+                        shutil.copy(req_ls[1], req_ls[2])
 
                 case "ren":
                     if not os.path.exists(PATH + "\\" + req_ls[1]):
@@ -129,11 +130,13 @@ try:
 
                 case "help":
                     print("ls -> list of all objects in the current directory.\n")
-                    print("gt <directory in list> -> go to the specified directory in thr current directory.\n")
-                    print("mkdir <name of directory> -> create a new directory in the current directory.\n")
+                    print("gt <directory> -> go to the specified directory in the current directory.\n")
+                    print("mdir <name of directory> -> create a new directory in the current directory.\n")
                     print("del <name of object> -> delete object in the current directory (may not work).\n")
-                    print("mv <path to the object (with root)> <path where to move the object (with root)> -> move file from the first directory to the second.\n")
-                    print("copy <path to the object (with root)> <path where to copy the object (with root)> -> copy file from the first directory to the second.\n")
+                    print("mv <path to the object (with root and object)> <path where to move the object (with root and"
+                          "name of object)> -> move file from the first directory to the second.\n")
+                    print("copy <path to the object (with root and object)> <path where to copy the object (with root"
+                          "and name of object)> -> copy file from the first directory to the second.\n")
                     print("ren <name of object> <new name of object> -> rename file in the current directory.\n")
                     print("run <name of file> -> run file in current directory(only .py or .bat files).\n")
 
@@ -142,6 +145,10 @@ try:
                     break
         except IndexError:
             print("Invalid syntax")
+        except BaseException as err:
+            print("Error")
+            print("Details:")
+            print(err)
 
         AB_PATH = abp(PATH)
 
