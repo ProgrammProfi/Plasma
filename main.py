@@ -38,6 +38,7 @@ try:
 			continue
 
 		try:
+
 			match req_ls[0]:
 				case "ls":
 
@@ -60,6 +61,61 @@ try:
 					else:
 						print("Cannot run this file")
 
+
+				case "open":
+					if not os.path.exists(PATH + "\\" + req_ls[1]):
+						print("Directory does not exist")
+					elif not os.path.isfile(PATH + "\\" + req_ls[1]):
+						print("Cannot open directory")
+					else:
+						try:
+							with open(PATH + "\\" + req_ls[1], encoding="utf-8") as f:
+								for line in f:
+									print(line[:-1])
+						except Exception as err:
+							print("Error")
+							print("Details:")
+							print(repr(err))
+
+
+				case "edit":
+					if not os.path.exists(PATH + "\\" + req_ls[1]):
+						print("Directory does not exist")
+					elif not os.path.isfile(PATH + "\\" + req_ls[1]):
+						print("Cannot edit directory")
+					else:
+						lines = []
+						is_edit = True
+						while is_edit:
+							line = input(">>>")
+							if line != "":
+								line += "\n"
+								lines.append(line)
+							else:
+								is_edit = False
+								try:
+									with open(PATH + "\\" + req_ls[1], "w", encoding="utf-8") as f:
+										f.writelines(lines)
+								except Exception as err:
+									print("Error")
+									print("Details:")
+									print(repr(err))
+
+
+				case "cr":
+					if os.path.exists(PATH + "\\" + req_ls[1]):
+						print("The endpoint already has such a file")
+					elif not "." in req_ls[1]:
+						print("Invalid file name")
+					else:
+						try:
+							with open(PATH + "\\" + req_ls[1], "x", encoding="utf-8"):
+								pass
+						except Exception as err:
+							print("Error")
+							print("Details:")
+							print(repr(err))
+
 				case "gt":
 
 					if os.path.exists(PATH + "\\" + req_ls[1]) and req_ls[1] != "..":
@@ -69,7 +125,7 @@ try:
 						PATH = PATH[0: PATH.rfind("\\")]
 
 					elif req_ls[1] == ".." and PATH == "root":
-						print("Can't go beyond root directory")
+						print("Cannot go beyond root directory")
 
 					elif not os.path.exists(PATH + "\\" + req_ls[1]):
 						print("Directory does not exist")
@@ -96,7 +152,12 @@ try:
 
 					except PermissionError as err:
 						print("Cannot delete file")
+						print("Details:")
 						print(err)
+					except Exception as err:
+						print("Error")
+						print("Details:")
+						print(repr(err))
 
 				case "mv":
 					if not os.path.exists(req_ls[1]):
@@ -136,7 +197,12 @@ try:
 							os.rename(PATH + "\\" + req_ls[1], PATH + "\\" + req_ls[2])
 						except PermissionError as err:
 							print("Cannot rename file")
-							print(err)
+							print("Details:")
+							print(repr(err))
+						except Exception as err:
+							print("Error")
+							print("Details:")
+							print(repr(err))
 
 				case "help":
 					print("ls -> list of all objects in the current directory.\n")
@@ -148,17 +214,21 @@ try:
 					print("copy <path to the object (with root and object)> <path where to copy the object (with root"
 					      "and name of object)> -> copy file from the first directory to the second.\n")
 					print("ren <name of object> <new name of object> -> rename file in the current directory.\n")
-					print("run <name of file> -> run file in current directory(only .py or .bat files).\n")
+					print("run <name of file> -> run the file in the current directory(only .py or .bat files).\n")
+					print("quit -> quit the OS.\n")
+					print("open <name of file> -> open the file in the current directory.\n")
+					print("edit <name of file> -> edit the file in the current directory.\n")
+					print("cr <name of file> -> create the file in the current directory.\n")
 
 				case "quit":
 					running = False
 					break
 		except IndexError:
 			print("Invalid syntax")
-		except BaseException as err:
+		except Exception or BaseException as err:
 			print("Error")
 			print("Details:")
-			print(err)
+			print(repr(err))
 
 		AB_PATH = abp(PATH)
 
